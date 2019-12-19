@@ -1,10 +1,12 @@
 const db = require('../data/db-config')
 
 module.exports = {
-    allUsers,
+    find,
     findById,
     add,
-    findUserPosts
+    findUserPosts,
+    update,
+    remove,
 }
 
 function findUserPosts(userId) {
@@ -23,19 +25,28 @@ function findUserPosts(userId) {
         .where('user_id', userId)
 }
 
-function allUsers() {
+function find() {
     return db('users')
 }
 
 function findById(id) {
-    return db('users')
-    .where({ id })
+    return db('users').where('id', id).first()
 }
 
 function add(user) {
-    return db('users').insert(user,'id')
+    return db('users').insert(user)
         .then (ids => {
-            const [id] = ids
-            return findById(id).first()
+            return findById(ids[0])
         })
+}
+
+function update(changes, id) {
+    return db('users').where({ id }).update(changes)
+    .then(count => {
+        return findById(id)
+    })
+}
+
+function remove(id) {
+    return db('users').where({ id }).del()
 }

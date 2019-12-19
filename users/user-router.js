@@ -1,12 +1,11 @@
 const express = require('express');
 
-const db = require('../data/db-config.js');
 const Users = require('./user-model')
 
 const router = express.Router();
 
 router.get('/', (req, res) => {
-  Users.allUsers()
+  Users.find()
   .then(users => {
     res.json(users);
   })
@@ -17,8 +16,7 @@ router.get('/', (req, res) => {
 
 router.get('/:id', (req, res) => {
   Users.findById(req.params.id)
-  .then(users => {
-    const user = users[0];
+  .then(user => {
 
     if (user) {
       res.json(user);
@@ -46,8 +44,8 @@ router.post('/', (req, res) => {
   const userData = req.body;
 
   Users.add(userData)
-  .then(user => {
-    res.status(201).json(user);
+  .then(newUser => {
+    res.status(201).json(newUser);
   })
   .catch(err => {
     console.log(err)
@@ -56,26 +54,25 @@ router.post('/', (req, res) => {
 });
 
 router.put('/:id', (req, res) => {
-  const { id } = req.params;
   const changes = req.body;
 
-  db('users').where({ id }).update(changes)
-  .then(count => {
-    if (count) {
-      res.json({ update: count });
+  Users.update(changes, req.params.id)
+  .then(user => {
+    if (user) {
+      res.json({ update: user });
     } else {
       res.status(404).json({ message: 'Could not find user with given id' });
     }
   })
   .catch(err => {
+    console.log(err)
     res.status(500).json({ message: 'Failed to update user' });
   });
 });
 
 router.delete('/:id', (req, res) => {
-  const { id } = req.params;
 
-  db('users').where({ id }).del()
+  Users.remove(req.params.id)
   .then(count => {
     if (count) {
       res.json({ removed: count });
